@@ -1,0 +1,21 @@
+h1= title
+p Server-Sent Events Test
+
+script(type='text/javascript')
+	if(!!window.EventSource){
+		var serverEvent = new EventSource("/cpuStats");
+
+		serverEvent.addEventListener('open',function(event){
+			console.log('Connection was opened.');
+		}, false);
+
+		serverEvent.addEventListener('message', function(event){
+			console.log(event);
+		}, false);
+
+		serverEvent.addEventListener('error', function(event){
+			if(event.eventPhase == EventSource.CLOSED){
+				console.log('Connection was closed.');
+			}
+		}, false);
+	}
