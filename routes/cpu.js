@@ -11,26 +11,45 @@ module.exports = function(app){
 	
 	function sendCPU(req, res){
 		var id = (new Date()).toLocaleTimeString();
-		var exec = require('child_process').exec, child;
-		var c = exec('sar -u 1 1 | grep Average');
+		var spawn = require('child_process').spawn,
+        exec = require('child_process').exec;
+		var args = ['-u','1','1'];
 		
+    startSSE(res);
+
+		var child = exec('sar -u 1 1 | grep Average',
+      function (error, stdout, stderr) {
+        if(stdout !== null){
+          constructSSE(res, id, stdout)
+        }
+        if(error !== null) {
+          console.log('exec error: ' + error);
+        }
+    });
+
 		setInterval(function(){
-			c = exec('sar -u 1 1 | grep Average');
-		}, 2000)
-		
-		c.stdout.on('data',function(data){
-			constructSSE(res, id, data);
-		});
+			var child = exec('sar -u 1 1 | grep Average',
+        function (error, stdout, stderr) {
+          if(stdout !== null){
+            constructSSE(res, id, stdout)
+          }
+          if(error !== null) {
+            console.log('exec error: ' + error);
+          }
+      });
+		}, 2000);
 	}
 
 	function constructSSE(res, id, data){
-		res.writeHead(200, {
-	    'Content-Type': 'text/event-stream',
-	    'Cache-Control': 'no-cache',
-	    'Connection': 'keep-alive'
-	  });
-		
 	  res.write('id: ' + id + '\n');
 	  res.write("data: " + data + '\n\n');
 	}
+
+  function startSSE(res){
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+  }
 }
