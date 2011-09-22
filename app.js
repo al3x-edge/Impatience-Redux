@@ -36,6 +36,19 @@ app.configure('production', function(){
 require('./routes')(app);
 require('./models')(app);
 
+function startSSE(res){
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+}
+
+function constructSSE(res, id, data){
+  res.write('id: ' + id + '\n');
+  res.write("data: " + data + '\n\n');
+}
+
 if(!module.parent){
 	app.listen(3000);
 	console.log("Express server listening on port %d", app.address().port);
